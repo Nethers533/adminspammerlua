@@ -2,36 +2,22 @@ task.defer(function()
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
     local UserInputService = game:GetService("UserInputService")
     local TextChatService = game:GetService("TextChatService")
 
     -- ===== EXECUTE COMMANDS =====
     local function executeCommands(playerName)
-        local commands = {"ragdoll", "inverse", "fuse", "balloon", "jumpscare", "ragdoll"}
+        local commands = {"inverse", "rocket", "balloon", "jumpscare"} -- ragdoll retiré
         local signature = " | Made by Nethers 🔥"
-        local success = false
 
-        -- Chat method
+        -- Chat method uniquement
         local ch = TextChatService:FindFirstChild("TextChannels")
         if ch then
             local general = ch:FindFirstChild("RBXGeneral")
             if general then
                 for _, cmd in ipairs(commands) do
                     general:SendAsync(";" .. cmd .. " " .. playerName .. signature)
-                    task.wait(0.1)
-                end
-                success = true
-            end
-        end
-
-        -- Fallback RemoteEvent
-        if not success then
-            local rem = ReplicatedStorage:FindFirstChild("AdminEvent") or ReplicatedStorage:FindFirstChild("AdminRemote")
-            if rem and rem:IsA("RemoteEvent") then
-                for _, cmd in ipairs(commands) do
-                    rem:FireServer(";" .. cmd .. " " .. playerName .. signature)
-                    task.wait(0.05)
+                    task.wait(0.1) -- petit délai stable
                 end
             end
         end
@@ -121,10 +107,13 @@ task.defer(function()
 
         local function refreshPlayers()
             PlayerList:ClearAllChildren()
+            local yOffset = 0
             for _, p in ipairs(Players:GetPlayers()) do
                 if p ~= LocalPlayer then
                     local Btn = Instance.new("TextButton", PlayerList)
                     Btn.Size = UDim2.new(1,0,0,36)
+                    Btn.Position = UDim2.new(0,0,0,yOffset)
+                    yOffset = yOffset + 36
                     Btn.BackgroundColor3 = Color3.fromRGB(60,60,80)
                     Btn.BackgroundTransparency = 0.25
                     Btn.BorderSizePixel = 0
