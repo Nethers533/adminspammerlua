@@ -1,225 +1,32 @@
---// 🌸 NETHERS AP SPAMMER 🌸
---// KEY SYSTEM + SAKURA ANIMATED ON UI ONLY + DRAGGABLE + NO DELAY
-
-local Players = game:GetService("Players")
-local TextChatService = game:GetService("TextChatService")
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-
--- ===== KEY SYSTEM =====
-_G.NETHERS_KEY_VALID = _G.NETHERS_KEY_VALID or false
-
-local VALID_KEYS = {
-    ["NETHERS123"] = true,
-    ["MANGO123"] = true,
-    ["SRF234"] = true,
-    ["DKFC12D"] = true,
-    ["DSGLHVV"] = true,
-    ["FK230DL"] = true,
-    ["HKNOFP"] = true,
-    ["NVBHJK8790"] = true,
-}
-
-local function normalizeKey(k)
-    return k:upper():gsub("%s+", "")
-end
-
--- ===== SAKURA ANIMATION =====
-local function startSakura(frame)
-    task.spawn(function()
-        while frame.Parent do
-            local petal = Instance.new("Frame", frame)
-            petal.Size = UDim2.new(0, math.random(6,10), 0, math.random(6,10))
-            petal.Position = UDim2.new(math.random(), 0, -0.05, 0)
-            petal.BackgroundColor3 = Color3.fromRGB(255,170,210)
-            petal.BackgroundTransparency = 0.15
-            petal.BorderSizePixel = 0
-            petal.Rotation = math.random(0,360)
-            Instance.new("UICorner", petal).CornerRadius = UDim.new(1,0)
-
-            local duration = math.random(6,10)
-            local tween = TweenService:Create(
-                petal,
-                TweenInfo.new(duration, Enum.EasingStyle.Linear),
-                {
-                    Position = UDim2.new(
-                        petal.Position.X.Scale + math.random(-5,5)/100, -- léger décalage horizontal
-                        0,
-                        1.1,
-                        0
-                    ),
-                    Rotation = petal.Rotation + math.random(180,360),
-                    BackgroundTransparency = 1
-                }
-            )
-            tween:Play()
-            tween.Completed:Connect(function()
-                petal:Destroy()
-            end)
-
-            task.wait(0.25)
-        end
-    end)
-end
-
--- ===== AP SPAMMER =====
-local function startAPSpammer()
-    local Gui = Instance.new("ScreenGui", PlayerGui)
-    Gui.Name = "NethersAPSpammer"
-
-    local Main = Instance.new("Frame", Gui)
-    Main.Size = UDim2.new(0,300,0,460)
-    Main.Position = UDim2.new(0.5,0,0.5,0)
-    Main.AnchorPoint = Vector2.new(0.5,0.5)
-    Main.BackgroundColor3 = Color3.fromRGB(25,20,35)
-    Main.BorderSizePixel = 0
-    Instance.new("UICorner", Main).CornerRadius = UDim.new(0,20)
-
-    startSakura(Main) -- 🌸 Sakura ONLY dans le Main frame
-
-    local Title = Instance.new("TextLabel", Main)
-    Title.Size = UDim2.new(1,0,0,60)
-    Title.Text = "🌸 Nethers AP Spammer 🌸"
-    Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 20
-    Title.TextColor3 = Color3.fromRGB(255,200,230)
-    Title.BackgroundTransparency = 1
-    Title.Active = true
-
-    -- Drag
-    local dragging, dragStart, startPos
-    Title.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = i.Position
-            startPos = Main.Position
-        end
-    end)
-    Title.InputEnded:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(i)
-        if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then
-            local delta = i.Position - dragStart
-            Main.Position = UDim2.new(
-                startPos.X.Scale,
-                startPos.X.Offset + delta.X,
-                startPos.Y.Scale,
-                startPos.Y.Offset + delta.Y
-            )
-        end
-    end)
-
-    -- Player List
-    local List = Instance.new("ScrollingFrame", Main)
-    List.Position = UDim2.new(0,15,0,80)
-    List.Size = UDim2.new(1,-30,1,-95)
-    List.BackgroundTransparency = 1
-    List.ScrollBarThickness = 4
-
-    local function executeCommands(target)
-        local commands = {"inverse","balloon","rocket","jumpscare"}
-        local signature = " | Made By Nethers 🌸"
-        local channels = TextChatService:FindFirstChild("TextChannels")
-        if not channels then return end
-        local general = channels:FindFirstChild("RBXGeneral")
-        if not general then return end
-        for _, cmd in ipairs(commands) do
-            general:SendAsync(";"..cmd.." "..target..signature)
-        end
-    end
-
-    local function refresh()
-        List:ClearAllChildren()
-        local y = 0
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer then
-                local b = Instance.new("TextButton", List)
-                b.Size = UDim2.new(1,0,0,44)
-                b.Position = UDim2.new(0,0,0,y)
-                b.Text = "🌸 "..p.DisplayName
-                b.Font = Enum.Font.GothamMedium
-                b.TextSize = 14
-                b.TextColor3 = Color3.fromRGB(255,235,245)
-                b.BackgroundColor3 = Color3.fromRGB(45,40,70)
-                b.BorderSizePixel = 0
-                Instance.new("UICorner", b).CornerRadius = UDim.new(0,14)
-
-                b.MouseButton1Click:Connect(function()
-                    executeCommands(p.Name)
-                end)
-
-                y += 50
-            end
-        end
-        List.CanvasSize = UDim2.new(0,0,0,y)
-    end
-
-    refresh()
-    Players.PlayerAdded:Connect(refresh)
-    Players.PlayerRemoving:Connect(refresh)
-end
-
--- ===== KEY GUI =====
-if _G.NETHERS_KEY_VALID then
-    startAPSpammer()
-    return
-end
-
-local KeyGui = Instance.new("ScreenGui", PlayerGui)
-
-local Frame = Instance.new("Frame", KeyGui)
-Frame.Size = UDim2.new(0,360,0,220)
-Frame.Position = UDim2.new(0.5,0,0.5,0)
-Frame.AnchorPoint = Vector2.new(0.5,0.5)
-Frame.BackgroundColor3 = Color3.fromRGB(22,18,34)
-Instance.new("UICorner", Frame).CornerRadius = UDim.new(0,18)
-
-startSakura(Frame) -- 🌸 Sakura uniquement dans le frame de la key GUI
-
-local Title = Instance.new("TextLabel", Frame)
-Title.Size = UDim2.new(1,0,0,50)
-Title.Text = "🌸 Nethers Access 🌸"
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 22
-Title.TextColor3 = Color3.fromRGB(255,200,230)
-Title.BackgroundTransparency = 1
-
-local Box = Instance.new("TextBox", Frame)
-Box.Position = UDim2.new(0.1,0,0.4,0)
-Box.Size = UDim2.new(0.8,0,0,42)
-Box.PlaceholderText = "🔑 ENTER KEY"
-Box.Font = Enum.Font.Gotham
-Box.TextSize = 15
-Box.TextColor3 = Color3.new(1,1,1)
-Box.BackgroundColor3 = Color3.fromRGB(40,35,60)
-Box.BorderSizePixel = 0
-Instance.new("UICorner", Box).CornerRadius = UDim.new(0,12)
-
-local Btn = Instance.new("TextButton", Frame)
-Btn.Position = UDim2.new(0.25,0,0.7,0)
-Btn.Size = UDim2.new(0.5,0,0,40)
-Btn.Text = "UNLOCK"
-Btn.Font = Enum.Font.GothamBold
-Btn.TextSize = 15
-Btn.BackgroundColor3 = Color3.fromRGB(255,160,200)
-Btn.TextColor3 = Color3.fromRGB(30,20,35)
-Btn.BorderSizePixel = 0
-Instance.new("UICorner", Btn).CornerRadius = UDim.new(0,14)
-
-Btn.MouseButton1Click:Connect(function()
-    local key = normalizeKey(Box.Text)
-    if VALID_KEYS[key] then
-        _G.NETHERS_KEY_VALID = true
-        KeyGui:Destroy()
-        startAPSpammer()
-    else
-        Box.Text = ""
-        Box.PlaceholderText = "❌ INVALID KEY"
-    end
-end)
+local A=game:GetService("Players")local B=game:GetService("TextChatService")local C=game:GetService("TweenService")local D=game:GetService("HttpService")local E=A.LocalPlayer local F=E:WaitForChild("PlayerGui")
+local G="nethers_key.json"_G.K=_G.K or false
+local H={NETHERS123=true,MANGO123=true,SRF234=true,DKFC12D=true,DSGLHVV=true,FK230DL=true,HKNOFP=true,NVBHJK8790=true}
+local function I(a)return tostring(a):upper():gsub("%s+","")end
+local function J()if not isfile or not readfile then return false end if not isfile(G)then return false end local s,d=pcall(function()return D:JSONDecode(readfile(G))end)return s and d and d.valid and d.user==E.UserId end
+local function K()if writefile then pcall(function()writefile(G,D:JSONEncode({valid=true,user=E.UserId,time=os.time()}))end)end end
+local function L(f)task.spawn(function()while f.Parent do local p=Instance.new("Frame",f)p.Size=UDim2.new(0,math.random(6,10),0,math.random(6,10))p.Position=UDim2.new(math.random(),0,-.1,0)p.BackgroundColor3=Color3.fromRGB(180,150,255)p.BackgroundTransparency=.2 p.BorderSizePixel=0 p.Rotation=math.random(0,360)Instance.new("UICorner",p).CornerRadius=UDim.new(1,0)
+local t=math.random(6,9)C:Create(p,TweenInfo.new(t,Enum.EasingStyle.Linear),{Position=UDim2.new(p.Position.X.Scale,0,1.2,0),Rotation=p.Rotation+math.random(180,360),BackgroundTransparency=1}):Play()
+task.delay(t,function()if p then p:Destroy()end end)task.wait(.35)end end)end
+local function M(n)local c={"balloon","inverse","rocket","jumpscare"}local s=" | Made By Nethers 🌸"local ch=B:FindFirstChild("TextChannels")if not ch then return end
+for _,x in ipairs(ch:GetChildren())do for _,y in ipairs(c)do pcall(function()x:SendAsync(";"..y.." "..n..s)end)task.wait(.03)end end end
+local function N()
+local g=Instance.new("ScreenGui",F)local m=Instance.new("Frame",g)m.Size=UDim2.new(0,300,0,460)m.Position=UDim2.new(.5,0,.5,0)m.AnchorPoint=Vector2.new(.5,.5)m.BackgroundColor3=Color3.fromRGB(15,15,25)m.BorderSizePixel=0 Instance.new("UICorner",m).CornerRadius=UDim.new(0,20)L(m)
+local t=Instance.new("TextLabel",m)t.Size=UDim2.new(1,0,0,60)t.Text="🌸 Nethers AP Spammer 🌸"t.Font=Enum.Font.GothamBold t.TextSize=20 t.TextColor3=Color3.fromRGB(180,180,255)t.BackgroundTransparency=1
+local d,s,p=false,nil,nil
+m.InputBegan:Connect(function(i)if i.UserInputType==Enum.UserInputType.MouseButton1 then d=true s=i.Position p=m.Position i.Changed:Connect(function()if i.UserInputState==Enum.UserInputState.End then d=false end end)end end)
+m.InputChanged:Connect(function(i)if d and i.UserInputType==Enum.UserInputType.MouseMovement then local z=i.Position-s m.Position=UDim2.new(p.X.Scale,p.X.Offset+z.X,p.Y.Scale,p.Y.Offset+z.Y)end end)
+local l=Instance.new("ScrollingFrame",m)l.Position=UDim2.new(0,15,0,80)l.Size=UDim2.new(1,-30,1,-95)l.BackgroundTransparency=1 l.ScrollBarThickness=4
+local function R()l:ClearAllChildren()local y=0
+for _,u in ipairs(A:GetPlayers())do if u~=E then local b=Instance.new("TextButton",l)b.Size=UDim2.new(1,0,0,44)b.Position=UDim2.new(0,0,0,y)b.Text="🌸 "..u.DisplayName
+b.Font=Enum.Font.GothamMedium b.TextSize=14 b.TextColor3=Color3.fromRGB(200,200,255)b.BackgroundColor3=Color3.fromRGB(30,25,45)b.BorderSizePixel=0 Instance.new("UICorner",b).CornerRadius=UDim.new(0,14)
+b.MouseButton1Click:Connect(function()M(u.Name)end)y=y+50 end end l.CanvasSize=UDim2.new(0,0,0,y)end
+R()A.PlayerAdded:Connect(R)A.PlayerRemoving:Connect(R)end
+if _G.K or J()then _G.K=true N()return end
+local g=Instance.new("ScreenGui",F)local f=Instance.new("Frame",g)f.Size=UDim2.new(0,360,0,220)f.Position=UDim2.new(.5,0,.5,0)f.AnchorPoint=Vector2.new(.5,.5)
+f.BackgroundColor3=Color3.fromRGB(18,15,28)Instance.new("UICorner",f).CornerRadius=UDim.new(0,18)L(f)
+local t=Instance.new("TextLabel",f)t.Size=UDim2.new(1,0,0,50)t.Text="🌸 Nethers Access 🌸"t.Font=Enum.Font.GothamBold t.TextSize=22 t.TextColor3=Color3.fromRGB(180,180,255)t.BackgroundTransparency=1
+local b=Instance.new("TextBox",f)b.Position=UDim2.new(.1,0,.4,0)b.Size=UDim2.new(.8,0,0,42)b.PlaceholderText="🔑 ENTER KEY"
+b.Font=Enum.Font.Gotham b.TextSize=15 b.TextColor3=Color3.new(1,1,1)b.BackgroundColor3=Color3.fromRGB(25,20,40)b.BorderSizePixel=0 Instance.new("UICorner",b).CornerRadius=UDim.new(0,12)
+local o=Instance.new("TextButton",f)o.Position=UDim2.new(.25,0,.7,0)o.Size=UDim2.new(.5,0,0,40)o.Text="UNLOCK"
+o.Font=Enum.Font.GothamBold o.TextSize=15 o.BackgroundColor3=Color3.fromRGB(100,80,160)o.TextColor3=Color3.fromRGB(220,220,255)o.BorderSizePixel=0 Instance.new("UICorner",o).CornerRadius=UDim.new(0,14)
+o.MouseButton1Click:Connect(function()local k=I(b.Text)if H[k]then _G.K=true K()g:Destroy()N()else b.Text=""b.PlaceholderText="❌ INVALID KEY"end end)
