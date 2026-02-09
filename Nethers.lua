@@ -1,141 +1,155 @@
-task.defer(function()
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
-    local UserInputService = game:GetService("UserInputService")
-    local TextChatService = game:GetService("TextChatService")
+--// NETHERS KEY SYSTEM - JAPAN THEME
+--// Accès une seule fois
 
-    -- ===== EXECUTE COMMANDS =====
-    local function executeCommands(playerName)
-        local commands = {"inverse", "rocket", "balloon", "jumpscare"} -- ragdoll retiré
-        local signature = " | Made by Nethers 🔥"
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local HttpService = game:GetService("HttpService")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-        -- Chat method uniquement
-        local ch = TextChatService:FindFirstChild("TextChannels")
-        if ch then
-            local general = ch:FindFirstChild("RBXGeneral")
-            if general then
-                for _, cmd in ipairs(commands) do
-                    general:SendAsync(";" .. cmd .. " " .. playerName .. signature)
-                    task.wait(0.1) -- petit délai stable
-                end
-            end
-        end
+-- ================== CONFIG ==================
+
+local KEY_FILE = "nethers_key.json"
+
+local VALID_KEYS = {
+    ["xiEdyQk9wS"] = true,
+    ["EqKM25dMSvHuiFnp"] = true,
+    ["f+-8akSG1aDB2nQj"] = true,
+    ["CSS-,YMo`w3dsOB"] = true,
+    ["1E52C"] = true,
+    ["F9714169A7C5E"] = true,
+    ["Nethers 2026"] = true,
+}
+
+-- ================== SAVE SYSTEM ==================
+
+local function hasKey()
+    if not isfile or not readfile then return false end
+    if not isfile(KEY_FILE) then return false end
+    local data = HttpService:JSONDecode(readfile(KEY_FILE))
+    return data and data.valid == true
+end
+
+local function saveKey()
+    if writefile then
+        writefile(KEY_FILE, HttpService:JSONEncode({
+            valid = true,
+            time = os.time()
+        }))
     end
+end
 
-    -- ===== MAIN GUI =====
-    local function loadMainGUI()
-        local ScreenGui = Instance.new("ScreenGui", PlayerGui)
-        ScreenGui.Name = "NethersAPSpammer"
+-- ================== GUI ==================
 
-        local Main = Instance.new("Frame", ScreenGui)
-        Main.Size = UDim2.new(0,240,0,360)
-        Main.Position = UDim2.new(0.5,-120,0.5,-180)
-        Main.BackgroundColor3 = Color3.fromRGB(30,30,30)
-        Main.BackgroundTransparency = 0.35
-        Main.BorderColor3 = Color3.fromRGB(200,200,255)
-        Main.BorderSizePixel = 2
-        Main.AnchorPoint = Vector2.new(0.5,0.5)
+local ScreenGui = Instance.new("ScreenGui", PlayerGui)
+ScreenGui.Name = "NethersKeySystem"
+ScreenGui.IgnoreGuiInset = true
 
-        -- Drag
-        local dragging, dragInput, dragStart, startPos
-        local function update(input)
-            local delta = input.Position - dragStart
-            Main.Position = UDim2.new(
-                startPos.X.Scale, startPos.X.Offset + delta.X,
-                startPos.Y.Scale, startPos.Y.Offset + delta.Y
-            )
-        end
+local Main = Instance.new("Frame", ScreenGui)
+Main.Size = UDim2.new(0, 420, 0, 260)
+Main.Position = UDim2.new(0.5, 0, 0.5, 0)
+Main.AnchorPoint = Vector2.new(0.5, 0.5)
+Main.BackgroundColor3 = Color3.fromRGB(20, 18, 30)
+Main.BackgroundTransparency = 0.1
+Main.BorderSizePixel = 0
+Main.Visible = not hasKey()
 
-        Main.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1
-            or input.UserInputType == Enum.UserInputType.Touch then
-                dragging = true
-                dragStart = input.Position
-                startPos = Main.Position
-                input.Changed:Connect(function()
-                    if input.UserInputState == Enum.UserInputState.End then
-                        dragging = false
-                    end
-                end)
-            end
-        end)
+local Corner = Instance.new("UICorner", Main)
+Corner.CornerRadius = UDim.new(0, 18)
 
-        Main.InputChanged:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseMovement
-            or input.UserInputType == Enum.UserInputType.Touch then
-                dragInput = input
-            end
-        end)
+local Stroke = Instance.new("UIStroke", Main)
+Stroke.Color = Color3.fromRGB(255, 150, 200)
+Stroke.Thickness = 1.5
+Stroke.Transparency = 0.2
 
-        UserInputService.InputChanged:Connect(function(input)
-            if dragging and input == dragInput then
-                update(input)
-            end
-        end)
+-- Title
+local Title = Instance.new("TextLabel", Main)
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.BackgroundTransparency = 1
+Title.Text = "🌸 Nethers Access 🌸"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 24
+Title.TextColor3 = Color3.fromRGB(255, 200, 220)
 
-        -- Title
-        local TitleBar = Instance.new("Frame", Main)
-        TitleBar.Size = UDim2.new(1,0,0,35)
-        TitleBar.BackgroundColor3 = Color3.fromRGB(50,50,70)
-        TitleBar.BackgroundTransparency = 0.25
+-- Subtitle
+local Sub = Instance.new("TextLabel", Main)
+Sub.Position = UDim2.new(0, 0, 0, 45)
+Sub.Size = UDim2.new(1, 0, 0, 30)
+Sub.BackgroundTransparency = 1
+Sub.Text = "Enter your key to continue"
+Sub.Font = Enum.Font.Gotham
+Sub.TextSize = 14
+Sub.TextColor3 = Color3.fromRGB(180, 170, 200)
 
-        local Title = Instance.new("TextLabel", TitleBar)
-        Title.Size = UDim2.new(1,0,1,0)
-        Title.Text = "Nethers AP Spammer"
-        Title.TextColor3 = Color3.fromRGB(255,255,255)
-        Title.TextScaled = true
-        Title.BackgroundTransparency = 1
-        Title.Font = Enum.Font.SourceSansBold
+-- Input
+local Box = Instance.new("TextBox", Main)
+Box.Position = UDim2.new(0.1, 0, 0.45, 0)
+Box.Size = UDim2.new(0.8, 0, 0, 42)
+Box.PlaceholderText = "🔑 Key here..."
+Box.Text = ""
+Box.Font = Enum.Font.Gotham
+Box.TextSize = 16
+Box.TextColor3 = Color3.fromRGB(255,255,255)
+Box.BackgroundColor3 = Color3.fromRGB(35, 30, 55)
+Box.BorderSizePixel = 0
 
-        local CloseBtn = Instance.new("TextButton", TitleBar)
-        CloseBtn.Size = UDim2.new(0,30,0,30)
-        CloseBtn.Position = UDim2.new(1,-35,0,2)
-        CloseBtn.Text = "X"
-        CloseBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
-        CloseBtn.TextColor3 = Color3.fromRGB(255,255,255)
-        CloseBtn.MouseButton1Click:Connect(function()
-            ScreenGui:Destroy()
-        end)
+Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 12)
 
-        -- Player list
-        local PlayerList = Instance.new("ScrollingFrame", Main)
-        PlayerList.Size = UDim2.new(1,-20,1,-50)
-        PlayerList.Position = UDim2.new(0,10,0,40)
-        PlayerList.BackgroundTransparency = 1
-        PlayerList.ScrollBarThickness = 6
+-- Button
+local Button = Instance.new("TextButton", Main)
+Button.Position = UDim2.new(0.25, 0, 0.7, 0)
+Button.Size = UDim2.new(0.5, 0, 0, 42)
+Button.Text = "Unlock"
+Button.Font = Enum.Font.GothamBold
+Button.TextSize = 16
+Button.TextColor3 = Color3.fromRGB(30, 20, 35)
+Button.BackgroundColor3 = Color3.fromRGB(255, 160, 200)
+Button.BorderSizePixel = 0
 
-        local function refreshPlayers()
-            PlayerList:ClearAllChildren()
-            local yOffset = 0
-            for _, p in ipairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer then
-                    local Btn = Instance.new("TextButton", PlayerList)
-                    Btn.Size = UDim2.new(1,0,0,36)
-                    Btn.Position = UDim2.new(0,0,0,yOffset)
-                    yOffset = yOffset + 36
-                    Btn.BackgroundColor3 = Color3.fromRGB(60,60,80)
-                    Btn.BackgroundTransparency = 0.25
-                    Btn.BorderSizePixel = 0
-                    Btn.Text = p.DisplayName
-                    Btn.TextColor3 = Color3.fromRGB(255,255,255)
-                    Btn.Font = Enum.Font.SourceSansBold
-                    Btn.TextSize = 14
+Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 14)
 
-                    Btn.MouseButton1Click:Connect(function()
-                        executeCommands(p.Name)
-                        Btn.BackgroundColor3 = Color3.fromRGB(0,150,0)
-                        task.wait(0.5)
-                        Btn.BackgroundColor3 = Color3.fromRGB(60,60,80)
-                    end)
-                end
-            end
-        end
+-- Status
+local Status = Instance.new("TextLabel", Main)
+Status.Position = UDim2.new(0, 0, 0.87, 0)
+Status.Size = UDim2.new(1, 0, 0, 25)
+Status.BackgroundTransparency = 1
+Status.Text = ""
+Status.Font = Enum.Font.Gotham
+Status.TextSize = 13
+Status.TextColor3 = Color3.fromRGB(255, 120, 120)
 
-        refreshPlayers()
-        Players.PlayerAdded:Connect(refreshPlayers)
-        Players.PlayerRemoving:Connect(refreshPlayers)
+-- ================== LOGIC ==================
+
+local function unlock()
+    local key = Box.Text
+    if VALID_KEYS[key] then
+        saveKey()
+        Status.TextColor3 = Color3.fromRGB(150, 255, 180)
+        Status.Text = "✔ Access granted"
+
+        TweenService:Create(Main, TweenInfo.new(0.5), {
+            BackgroundTransparency = 1,
+            Size = UDim2.new(0, 460, 0, 280)
+        }):Play()
+
+        task.wait(0.6)
+        ScreenGui:Destroy()
+
+        -- >>> ICI TU LANCES TON SCRIPT PRINCIPAL <<<
+        -- loadMainGUI()
+    else
+        Status.TextColor3 = Color3.fromRGB(255, 120, 120)
+        Status.Text = "✖ Invalid key"
     end
+end
 
-    loadMainGUI()
+Button.MouseButton1Click:Connect(unlock)
+Box.FocusLost:Connect(function(enter)
+    if enter then unlock() end
 end)
+
+-- Animation d'entrée
+Main.Size = UDim2.new(0, 380, 0, 220)
+TweenService:Create(Main, TweenInfo.new(0.6, Enum.EasingStyle.Quart), {
+    Size = UDim2.new(0, 420, 0, 260)
+}):Play()
